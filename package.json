@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/KaylaVangel/employee-tracker/issues"
   },
-  "homepage": "https://github.com/KaylaVangel/employee-tracker#readme"
+  "homepage": "https://github.com/KaylaVangel/employee-tracker#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.16"
+  }
 }
