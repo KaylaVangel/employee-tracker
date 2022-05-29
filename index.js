@@ -14,8 +14,8 @@ const viewDepartments = async () => {
 };
 
 const viewRoles = async () => {
-    //foreign key/join?//
-    const sql = 'select * from role';
+    //foreign key dept id//
+    const sql = 'select * from role LEFT JOIN department ON role.department_id = department.id';
     db.query(sql, (err, rows) => {
         if (err) throw err
         console.table(rows)
@@ -77,18 +77,25 @@ const addRole = async () => {
         console.log(answers);
         const deptIdSql = `Select id from department Where department_name = (?)`;
         const deptIdParams = answers.department;
-
-        const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
-        const params = [answers.title, answers.salary, answers.department];
-        db.query(sql, params, (err, rows) => {
+        db.query(deptIdSql, deptIdParams, (err, rows) => {
             if (err) throw err;
-            console.log("Success.");
-            menu();
-        }
-        )
-    })
 
-}
+            const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
+            const params = [answers.title, answers.salary, answers.department];
+            db.query(sql, params, (error, rowses) => {
+                if (err) throw err;
+                console.log("Success.");
+                menu();
+            }
+            )
+        })
+
+        menu();
+    }
+    )
+};
+
+
 
 const addEmployee = () => {
     inquirer.prompt[{
@@ -114,9 +121,8 @@ const addEmployee = () => {
     {
         type: 'input',
         name: "managerLast",
-        message: 'What is your managers last name?'
-    },
-]).then((answers) => {
+        message: 'What is your managers last name?',
+    }].then((answers) => {
         console.log(answers);
         const sql = `INSERT INTO employee (first_name, last_name, role, ) VALUES (?, ?, ?)`;
         const params = [answers.title, answers.salary, answers.department];
