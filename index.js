@@ -14,8 +14,7 @@ const viewDepartments = async () => {
 };
 
 const viewRoles = async () => {
-    //foreign key dept id//
-    const sql = 'select * from role LEFT JOIN department ON role.department_id = department.id';
+    const sql = 'SELECT * FROM role LEFT JOIN department ON role.department_id = department.id';
     db.query(sql, (err, rows) => {
         if (err) throw err
         console.table(rows)
@@ -26,8 +25,7 @@ const viewRoles = async () => {
 };
 
 const viewEmployees = async () => {
-    //foreign key/join?//
-    const sql = 'select * from employee';
+    const sql = 'SELECT t2.id, t2.first_name, t2.last_name, t2.title, t2.department_name, employee.first_name as manager_first_name, employee.last_name as manager_last_name FROM (SELECT employee.id, first_name, last_name, title, salary, department_name, manager_id FROM employee INNER JOIN (SELECT role.id, role.title, role.salary, department.department_name FROM role LEFT JOIN department ON role.department_id = department.id) t1 ON employee.role_id = t1.id) t2 LEFT JOIN employee ON t2.manager_id = employee.id'
     db.query(sql, (err, rows) => {
         if (err) throw err
         console.table(rows)
