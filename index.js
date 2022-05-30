@@ -14,7 +14,7 @@ const viewDepartments = async () => {
 };
 
 const viewRoles = async () => {
-    const sql = 'SELECT * FROM role LEFT JOIN department ON role.department_id = department.id';
+    const sql = 'SELECT role.id, role.title, role.salary, department.department_name FROM role LEFT JOIN department ON role.department_id = department.id';
     db.query(sql, (err, rows) => {
         if (err) throw err
         console.table(rows)
@@ -72,25 +72,25 @@ const addRole = async () => {
 
 
     ]).then((answers) => {
-        console.log(answers);
         const deptIdSql = `Select id from department Where department_name = (?)`;
         const deptIdParams = answers.department;
+        let deptId;
         db.query(deptIdSql, deptIdParams, (err, rows) => {
             if (err) throw err;
-
+            deptId = rows[0].id;
             const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
-            const params = [answers.title, answers.salary, answers.department];
+            const params = [answers.title, answers.salary, deptId];
             db.query(sql, params, (error, rowses) => {
                 if (err) throw err;
                 console.log("Success.");
                 menu();
             }
             )
-        })
+        });
 
-        menu();
-    }
-    )
+
+
+    })
 };
 
 
@@ -128,23 +128,29 @@ const addEmployee = () => {
         db.query(roleSql, (err, rows) => {
             if (err) throw err;
             roleId = rows[0].id;
+
+            const man = `SELECT id FROM employee WHERE first_name LIKE "${answers.managerFirst}" AND last_name LIKE "${answers.managerLast}"`;
+            let managerId;
+            db.query(man, (err, rows) => {
+                if (err) throw err;
+                managerId = rows[0].id;
+
+                const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id ) VALUES (?, ?, ?, ?)`;
+                const params = [answers.firstName, answers.lastName, roleId, managerId];
+                db.query(sql, params, (err, rows) => {
+                    if (err) throw err;
+                    console.log("Success.");
+                    menu();
+                })
+
+            });
+
         });
 
 
-        const man = `SELECT manager_id FROM employee WHERE employee.first_name LIKE "${answers.managerFirst}" AND employee.last_name LIKE "${answers.managerLast}"`;
-        let managerId;
-        db.query(man, (err, rows) => {
-            if (err) throw err;
-            managerId = rows[0].id;
-        });
 
-        const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id ) VALUES (?, ?, ?, ?)`;
-        const params = [answers.firstName, answers.lastName, roleId, managerId];
-        db.query(sql, params, (err, rows) => {
-            if (err) throw err;
-            console.log("Success.");
-            menu();
-        })
+
+
     })
 
 };
@@ -167,7 +173,6 @@ const updateEmployee = () => {
         db.query(upRol, (err, rows) => {
             if (err) throw err;
             console.log(rows);
-            
             console.log("Success.");
             menu();
         });
@@ -178,50 +183,50 @@ const updateEmployee = () => {
 
 
 const menu = () => {
-        inquirer.prompt([
-            {
-                type: 'list',
-                name: "menu",
-                message: "What do you want to do?",
-                choices: ["View all departments", "View all roles", "View all employees", "Add a department",
-                    "Add a role", "Add an employee", "update an employee role"],
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: "menu",
+            message: "What do you want to do?",
+            choices: ["View all departments", "View all roles", "View all employees", "Add a department",
+                "Add a role", "Add an employee", "update an employee role"],
 
-            }
-        ]).then(choice => {
-            switch (choice.menu) {
-                case "View all departments":
-                    viewDepartments()
-                    break;
-                case "View all roles":
-                    viewRoles();
-                    break;
-                case "View all employees":
-                    viewEmployees();
-                    break;
-                case "Add a department":
-                    addDepartment();
-                    break;
-                case "Add a role":
-                    addRole();
-                    break;
-                case "Add an employee":
-                    addEmployee();
-                    break;
-                case "update an employee role":
-                    updateEmployee();
-                    break;
-                default:
-            }
+        }
+    ]).then(choice => {
+        switch (choice.menu) {
+            case "View all departments":
+                viewDepartments()
+                break;
+            case "View all roles":
+                viewRoles();
+                break;
+            case "View all employees":
+                viewEmployees();
+                break;
+            case "Add a department":
+                addDepartment();
+                break;
+            case "Add a role":
+                addRole();
+                break;
+            case "Add an employee":
+                addEmployee();
+                break;
+            case "update an employee role":
+                updateEmployee();
+                break;
+            default:
+        }
 
-        })
+    })
 
-    }
+}
 
 
 
-    const init = () => {
-        menu()
-    }
+const init = () => {
+    menu()
+}
 
-    init();
+init();
 
