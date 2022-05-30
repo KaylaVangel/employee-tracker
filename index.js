@@ -96,99 +96,132 @@ const addRole = async () => {
 
 
 const addEmployee = () => {
-    inquirer.prompt[{
-        type: 'input',
-        name: "firstName",
-        message: 'What is your first name? (Required)',
-    },
-    {
-        type: 'input',
-        name: "lastName",
-        message: 'What is your last name? (Required)',
-    },
-    {
-        type: 'input',
-        name: "role",
-        message: 'What is your role? (Required)',
-    },
-    {
-        type: 'input',
-        name: "managerFirst",
-        message: 'What is your managers first name?',
-    },
-    {
-        type: 'input',
-        name: "managerLast",
-        message: 'What is your managers last name?',
-    }].then((answers) => {
-        console.log(answers);
-        const sql = `INSERT INTO employee (first_name, last_name, role, ) VALUES (?, ?, ?)`;
-        const params = [answers.title, answers.salary, answers.department];
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: "firstName",
+            message: 'What is your first name? (Required)',
+        },
+        {
+            type: 'input',
+            name: "lastName",
+            message: 'What is your last name? (Required)',
+        },
+        {
+            type: 'input',
+            name: "role",
+            message: 'What is your role? (Required)',
+        },
+        {
+            type: 'input',
+            name: "managerFirst",
+            message: 'What is your managers first name?',
+        },
+        {
+            type: 'input',
+            name: "managerLast",
+            message: 'What is your managers last name?',
+        }
+    ]).then((answers) => {
+        const roleSql = `SELECT id FROM role WHERE role.title LIKE "${answers.role}"`;
+        let roleId;
+        db.query(roleSql, (err, rows) => {
+            if (err) throw err;
+            roleId = rows[0].id;
+        });
+
+
+        const man = `SELECT manager_id FROM employee WHERE employee.first_name LIKE "${answers.managerFirst}" AND employee.last_name LIKE "${answers.managerLast}"`;
+        let managerId;
+        db.query(man, (err, rows) => {
+            if (err) throw err;
+            managerId = rows[0].id;
+        });
+
+        const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id ) VALUES (?, ?, ?, ?)`;
+        const params = [answers.firstName, answers.lastName, roleId, managerId];
         db.query(sql, params, (err, rows) => {
             if (err) throw err;
             console.log("Success.");
             menu();
-        }
-        )
+        })
     })
 
-}
+};
 
-const editEmployee = () => {
-    const sql = `UPDATE role SET role = ? 
-    WHERE id = ?`;
+const updateEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: "employee",
+            message: 'Please enter the id number of the employee you would like to update. (Required)',
+        },
+        {
+            type: 'input',
+            name: "role",
+            message: 'What is the new role of this employee? (Required)',
+        },
+
+    ]).then((answers) => {
+        let upRol = `UPDATE employee SET role_id = ${answers.role} WHERE id = ${answers.employee} `;
+        db.query(upRol, (err, rows) => {
+            if (err) throw err;
+            console.log(rows);
+            
+            console.log("Success.");
+            menu();
+        });
 
 
-}
+    });
+};
 
 
 const menu = () => {
-    inquirer.prompt([
-        {
-            type: 'list',
-            name: "menu",
-            message: "What do you want to do?",
-            choices: ["View all departments", "View all roles", "View all employees", "Add a department",
-                "Add a role", "Add an employee", "update an employee role"],
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: "menu",
+                message: "What do you want to do?",
+                choices: ["View all departments", "View all roles", "View all employees", "Add a department",
+                    "Add a role", "Add an employee", "update an employee role"],
 
-        }
-    ]).then(choice => {
-        switch (choice.menu) {
-            case "View all departments":
-                viewDepartments()
-                break;
-            case "View all roles":
-                viewRoles();
-                break;
-            case "View all employees":
-                viewEmployees();
-                break;
-            case "Add a department":
-                addDepartment();
-                break;
-            case "Add a role":
-                addRole();
-                break;
-            case "Add an employee":
-                addEmployee();
-                break;
-            case "update an employee role":
-                updateEmployee();
-                break;
-            default:
-        }
+            }
+        ]).then(choice => {
+            switch (choice.menu) {
+                case "View all departments":
+                    viewDepartments()
+                    break;
+                case "View all roles":
+                    viewRoles();
+                    break;
+                case "View all employees":
+                    viewEmployees();
+                    break;
+                case "Add a department":
+                    addDepartment();
+                    break;
+                case "Add a role":
+                    addRole();
+                    break;
+                case "Add an employee":
+                    addEmployee();
+                    break;
+                case "update an employee role":
+                    updateEmployee();
+                    break;
+                default:
+            }
 
-    })
+        })
 
-}
-
-
-
-const init = () => {
-    menu()
-}
-
-init();
+    }
 
 
+
+    const init = () => {
+        menu()
+    }
+
+    init();
 
